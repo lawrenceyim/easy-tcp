@@ -1,0 +1,16 @@
+# Mac
+.DS_STORE
+
+# Build output
+bin/
+obj/
+
+# Rider
+.idea/
+
+# Visual Studio
+.vs/
+
+# User-specific files
+*.user
+*.suo
