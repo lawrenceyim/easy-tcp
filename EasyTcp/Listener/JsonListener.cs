@@ -19,7 +19,8 @@ public class JsonListener {
 
         while (!_cancelTokenSource.IsCancellationRequested) {
             TcpClient client = _listener.AcceptTcpClient();
-            Task.Run(() => { _HandleClient(client, _cancelTokenSource.Token); }, _cancelTokenSource.Token);
+            Console.WriteLine($"{client.Client.RemoteEndPoint} connected");
+            Task.Run(() => { _ = _HandleClient(client, _cancelTokenSource.Token); }, _cancelTokenSource.Token);
         }
     }
 
@@ -28,29 +29,31 @@ public class JsonListener {
         _listener.Stop();
     }
 
-    private void _HandleClient(TcpClient client, CancellationToken token) {
+    private async Task _HandleClient(TcpClient client, CancellationToken token) {
+        Console.WriteLine($"Handling client: {client.Client.RemoteEndPoint}");
         NetworkStream stream = client.GetStream();
+        byte[] buffer = new byte[1024];
+
         try {
+            Console.WriteLine($"{client.Client.RemoteEndPoint} try");
             while (!token.IsCancellationRequested) {
-                ITcpResult result = JsonUtils.ReadPacketLength(stream);
-                if (result is not SuccessIntDto successIntDto) {
-                    continue;
+                int bytesRead = stream.Read(buffer);
+                if (bytesRead == 0) {
+                    Console.WriteLine($"{client.Client.RemoteEndPoint} bytes read == 0");
+                    break;
                 }
 
-                int length = successIntDto.Value;
-                result = JsonUtils.ReadStringPacket(stream, length);
-                if (result is not SuccessJsonDto successJsonDto) {
-                    continue;
-                }
-
-                string json = successJsonDto.Json;
+                int length = BufferReader.ReadInt(buffer, 0);
+                string json = BufferReader.ReadString(buffer, 4, length);
                 JsonReceived?.Invoke(json);
             }
         }
-        catch {
+        catch (Exception e) {
+            Console.WriteLine($"{client.Client.RemoteEndPoint} catch with exception: {e}");
             // ignored
         }
         finally {
+            Console.WriteLine($"{client.Client.RemoteEndPoint} disconnected");
             stream.Close();
         }
     }

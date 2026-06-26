@@ -3,10 +3,10 @@ using System.Net.Sockets;
 namespace EasyTcp;
 
 internal static class JsonUtils {
-    internal static ITcpResult ReadPacketLength(NetworkStream stream) {
+    internal static async Task<ITcpResult> ReadPacketLength(NetworkStream stream) {
         try {
             byte[] buffer = new byte[4];
-            stream.ReadExactly(buffer, 0, 4);
+            await stream.ReadExactlyAsync(buffer, 0, 4);
             return new SuccessIntDto(BitConverter.ToInt32(buffer, 0));
         }
         catch {
@@ -14,10 +14,10 @@ internal static class JsonUtils {
         }
     }
 
-    internal static ITcpResult ReadStringPacket(NetworkStream stream, int lengthOfStringInBytes) {
+    internal static async Task<ITcpResult> ReadStringPacket(NetworkStream stream, int lengthOfStringInBytes) {
         try {
             byte[] buffer = new byte[lengthOfStringInBytes];
-            stream.ReadExactly(buffer, 0, lengthOfStringInBytes);
+            await stream.ReadExactlyAsync(buffer, 0, lengthOfStringInBytes);
             return new SuccessJsonDto(BitConverter.ToString(buffer));
         }
         catch {

@@ -1,3 +1,8 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿using System.Text;
+using EasyTcp;
 
-Console.WriteLine("Hello, World!");
+string ip = "10.0.0.180";
+int port = 8080;
+JsonListener listener = new JsonListener(ip, port);
+listener.JsonReceived += s => { Console.WriteLine($"Received: {s}"); };
+listener.Start();
