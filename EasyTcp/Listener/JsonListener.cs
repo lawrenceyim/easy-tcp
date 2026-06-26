@@ -5,6 +5,8 @@ namespace EasyTcp;
 
 public class JsonListener {
     public event Action<string> JsonReceived;
+    public event Action<string> ClientConnected;
+    public event Action<string> ClientDisconnected;
 
     private readonly TcpListener _listener;
     private CancellationTokenSource _cancelTokenSource = new();
@@ -19,7 +21,6 @@ public class JsonListener {
 
         while (!_cancelTokenSource.IsCancellationRequested) {
             TcpClient client = _listener.AcceptTcpClient();
-            Console.WriteLine($"{client.Client.RemoteEndPoint} connected");
             Task.Run(() => { _ = _HandleClient(client, _cancelTokenSource.Token); }, _cancelTokenSource.Token);
         }
     }
@@ -30,12 +31,13 @@ public class JsonListener {
     }
 
     private Task _HandleClient(TcpClient client, CancellationToken token) {
-        Console.WriteLine($"Handling client: {client.Client.RemoteEndPoint}");
         NetworkStream stream = client.GetStream();
         byte[] buffer = new byte[1024];
+        string endPoint = $"{client.Client.RemoteEndPoint}";
+        ClientConnected?.Invoke(endPoint);
 
         try {
-            Console.WriteLine($"{client.Client.RemoteEndPoint} try");
+            // Console.WriteLine($"{client.Client.RemoteEndPoint} try");
             while (!token.IsCancellationRequested) {
                 stream.ReadExactly(buffer, 0, 4);
                 int length = BufferReader.ReadInt(buffer, 0);
@@ -45,13 +47,13 @@ public class JsonListener {
             }
         }
         catch (EndOfStreamException) {
-            Console.WriteLine($"{client.Client.RemoteEndPoint} stream ended");
+            // Console.WriteLine($"{endPoint} stream ended");
         }
         catch (Exception e) {
-            Console.WriteLine($"{client.Client.RemoteEndPoint} catch with exception: {e}");
+            // Console.WriteLine($"{endPoint} catch with exception: {e}");
         }
         finally {
-            Console.WriteLine($"{client.Client.RemoteEndPoint} disconnected");
+            ClientDisconnected.Invoke(endPoint);
             stream.Close();
         }
 
