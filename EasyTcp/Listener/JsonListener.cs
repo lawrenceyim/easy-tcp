@@ -5,9 +5,10 @@ using System.Text;
 namespace EasyTcp;
 
 public class JsonListener {
-    public event Action<string> JsonReceived;
-    public event Action<string> ClientConnected;
-    public event Action<string> ClientDisconnected;
+    public event Action<string>? JsonReceived;
+    public event Action<string>? ClientConnected;
+    public event Action<string>? ClientDisconnected;
+    public event Action<string>? ExceptionThrown;
 
     private CancellationTokenSource _cancelTokenSource = new();
 
@@ -17,6 +18,7 @@ public class JsonListener {
         _byteListener = new ByteListener(ipAddress, port);
         _byteListener.ClientConnected += (endpoint) => { ClientConnected?.Invoke(endpoint); };
         _byteListener.ClientDisconnected += (endpoint) => { ClientDisconnected?.Invoke(endpoint); };
+        _byteListener.ExceptionThrown += (e) => { ExceptionThrown?.Invoke(e); };
         _byteListener.BytesReceived += (bytes) => {
             string result = Encoding.UTF8.GetString(bytes);
             JsonReceived?.Invoke(result);

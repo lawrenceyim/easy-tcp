@@ -4,9 +4,10 @@ using System.Net.Sockets;
 namespace EasyTcp;
 
 public class ByteListener {
-    public event Action<byte[]> BytesReceived;
-    public event Action<string> ClientConnected;
-    public event Action<string> ClientDisconnected;
+    public event Action<byte[]>? BytesReceived;
+    public event Action<string>? ClientConnected;
+    public event Action<string>? ClientDisconnected;
+    public event Action<string>? ExceptionThrown;
 
     private readonly TcpListener _listener;
     private CancellationTokenSource _cancelTokenSource = new();
@@ -37,7 +38,6 @@ public class ByteListener {
         ClientConnected?.Invoke(endPoint);
 
         try {
-            // Console.WriteLine($"{client.Client.RemoteEndPoint} try");
             while (!token.IsCancellationRequested) {
                 stream.ReadExactly(buffer, 0, 4);
                 int length = BufferReader.ReadInt(buffer, 0);
@@ -49,10 +49,10 @@ public class ByteListener {
             // Console.WriteLine($"{endPoint} stream ended");
         }
         catch (Exception e) {
-            // Console.WriteLine($"{endPoint} catch with exception: {e}");
+            ExceptionThrown?.Invoke(e.ToString());
         }
         finally {
-            ClientDisconnected.Invoke(endPoint);
+            ClientDisconnected?.Invoke(endPoint);
             stream.Close();
         }
 
