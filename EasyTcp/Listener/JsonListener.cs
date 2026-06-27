@@ -37,8 +37,8 @@ public class JsonListener : EasyTcpListener {
         return _byteListener.Write(endPoint, bytes);
     }
 
-    public void Write(string endPoint, string json) {
+    public bool Write(string endPoint, string json) {
         byte[] bytes = Encoding.UTF8.GetBytes(json);
-        _byteListener.Write(endPoint, bytes);
+        return _byteListener.Write(endPoint, bytes);
     }
 }
