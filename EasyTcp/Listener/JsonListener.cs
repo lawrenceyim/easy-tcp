@@ -4,8 +4,8 @@ using System.Text;
 
 namespace EasyTcp;
 
-public class JsonListener {
-    public event Action<string>? JsonReceived;
+public class JsonListener : EasyTcpListener {
+    public event Action<string, string>? JsonReceived;
     public event Action<string>? ClientConnected;
     public event Action<string>? ClientDisconnected;
     public event Action<string>? ExceptionThrown;
@@ -19,9 +19,9 @@ public class JsonListener {
         _byteListener.ClientConnected += (endpoint) => { ClientConnected?.Invoke(endpoint); };
         _byteListener.ClientDisconnected += (endpoint) => { ClientDisconnected?.Invoke(endpoint); };
         _byteListener.ExceptionThrown += (e) => { ExceptionThrown?.Invoke(e); };
-        _byteListener.BytesReceived += (bytes) => {
+        _byteListener.BytesReceived += (endPoint, bytes) => {
             string result = Encoding.UTF8.GetString(bytes);
-            JsonReceived?.Invoke(result);
+            JsonReceived?.Invoke(endPoint, result);
         };
     }
 
@@ -31,5 +31,14 @@ public class JsonListener {
 
     public void Stop() {
         _byteListener.Stop();
+    }
+
+    public bool Write(string endPoint, byte[] bytes) {
+        return _byteListener.Write(endPoint, bytes);
+    }
+
+    public void Write(string endPoint, string json) {
+        byte[] bytes = Encoding.UTF8.GetBytes(json);
+        _byteListener.Write(endPoint, bytes);
     }
 }

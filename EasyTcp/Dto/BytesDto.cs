@@ -1,6 +1,6 @@
 namespace EasyTcp;
 
-internal record JsonDto(
+internal record BytesDto(
     string EndPoint,
-    string Json
+    byte[] Bytes
 );
