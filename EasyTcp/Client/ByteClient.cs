@@ -55,6 +55,8 @@ public class ByteClient : EasyTcpClient {
                 return false;
             }
 
+            byte[] lengthBytes = BitConverter.GetBytes(bytes.Length);
+            _stream.WriteAsync(lengthBytes, 0, lengthBytes.Length, _token);
             _stream.WriteAsync(bytes, 0, bytes.Length, _token);
         }
         catch {

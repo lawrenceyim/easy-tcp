@@ -11,7 +11,7 @@ public class ByteListener : EasyTcpListener {
 
     private readonly TcpListener _listener;
     private CancellationTokenSource _cancelTokenSource = new();
-    private Dictionary<string, NetworkStream> _streams = [];
+    private readonly Dictionary<string, NetworkStream> _streams = [];
 
     public ByteListener(string ipAddress, int port) {
         _listener = new TcpListener(IPAddress.Parse(ipAddress), port);
@@ -39,6 +39,8 @@ public class ByteListener : EasyTcpListener {
                 return false;
             }
 
+            byte[] lengthBytes = BitConverter.GetBytes(bytes.Length);
+            stream.WriteAsync(lengthBytes, 0, lengthBytes.Length);
             stream.WriteAsync(bytes, 0, bytes.Length);
         }
         catch {
